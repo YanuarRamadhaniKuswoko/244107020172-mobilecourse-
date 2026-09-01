@@ -1,0 +1,40 @@
+# OS dan editor
+.DS_Store
+.history/
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/*.swp
+
+# Semua hasil generate Flutter di dalam folder minggu.
+# Yang sengaja tetap di-track: lib/ dan test/.
+**/android/
+**/ios/
+**/linux/
+**/macos/
+**/web/
+**/windows/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/.metadata
+**/analysis_options.yaml
+**/pubspec.yaml
+**/pubspec.lock
+
+# Build dan test outputs
+**/build/
+**/coverage/
+
+# Debug dan release artifacts
+**/*.log
+**/*.class
+**/app.*.symbols
+**/app.*.map.json
+
+
+_template-week
