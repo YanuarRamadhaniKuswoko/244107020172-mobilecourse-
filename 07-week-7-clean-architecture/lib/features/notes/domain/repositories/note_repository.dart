@@ -13,4 +13,3 @@ abstract class NoteRepository {
   Future<({int count, Failure? failure})> countDirty();
   Future<({int syncedCount, Failure? failure})> syncNotes();
 }
-

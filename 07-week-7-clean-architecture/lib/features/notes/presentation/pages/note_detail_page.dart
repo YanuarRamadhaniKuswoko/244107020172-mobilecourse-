@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/format.dart';
 import '../../domain/entities/note.dart';
 import '../providers/notes_providers.dart';
 
 class NoteDetailPage extends ConsumerStatefulWidget {
-  const NoteDetailPage({
-    super.key,
-    this.noteId,
-  });
+  const NoteDetailPage({super.key, this.noteId});
 
   final int? noteId;
 
@@ -48,24 +46,21 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
 
       if (existingNote == null && widget.noteId == null) {
         // Catatan Baru
-        await ref.read(notesProvider.notifier).addNote(
-              title: title,
-              body: body,
-            );
+        await ref
+            .read(notesProvider.notifier)
+            .addNote(title: title, body: body);
       } else {
         // Update Catatan yang sudah ada
-        final noteToUpdate = (existingNote ??
-                Note(
-                  id: widget.noteId,
-                  title: title,
-                  body: body,
-                  updatedAt: DateTime.now(),
-                  dirty: true,
-                ))
-            .copyWith(
-          title: title,
-          body: body,
-        );
+        final noteToUpdate =
+            (existingNote ??
+                    Note(
+                      id: widget.noteId,
+                      title: title,
+                      body: body,
+                      updatedAt: DateTime.now(),
+                      dirty: true,
+                    ))
+                .copyWith(title: title, body: body);
         await ref.read(notesProvider.notifier).updateNote(noteToUpdate);
       }
 
@@ -185,7 +180,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
               if (note != null) ...[
                 Card(
                   elevation: 0,
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.4,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -245,8 +242,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
-                onPressed:
-                    _isSaving ? null : () => _saveNote(existingNote: note),
+                onPressed: _isSaving
+                    ? null
+                    : () => _saveNote(existingNote: note),
                 icon: const Icon(Icons.save),
                 label: Text(
                   _isSaving

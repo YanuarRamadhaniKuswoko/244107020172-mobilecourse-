@@ -9,4 +9,3 @@ class DeleteNote {
     return _repository.deleteNote(id);
   }
 }
-

@@ -1,22 +1,22 @@
 import 'package:dio/dio.dart';
 import 'package:sqflite/sqflite.dart';
+
 import '../../../../core/failures.dart';
 import '../../domain/entities/note.dart';
 import '../../domain/repositories/note_repository.dart';
 import '../models/note_model.dart';
 
 class NoteRepositoryImpl implements NoteRepository {
-  NoteRepositoryImpl({
-    required this.openDb,
-    Dio? dio,
-  })  : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: 'https://jsonplaceholder.typicode.com',
-                connectTimeout: const Duration(seconds: 5),
-                receiveTimeout: const Duration(seconds: 5),
-              ),
-            );
+  NoteRepositoryImpl({required this.openDb, Dio? dio})
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: 'https://jsonplaceholder.typicode.com',
+              connectTimeout: const Duration(seconds: 5),
+              receiveTimeout: const Duration(seconds: 5),
+            ),
+          );
 
   final Future<Database> Function() openDb;
   final Dio _dio;
@@ -81,10 +81,7 @@ class NoteRepositoryImpl implements NoteRepository {
       );
       return (note: created, failure: null);
     } catch (e) {
-      return (
-        note: null,
-        failure: LocalFailure('Gagal menyimpan catatan: $e'),
-      );
+      return (note: null, failure: LocalFailure('Gagal menyimpan catatan: $e'));
     }
   }
 
@@ -171,11 +168,7 @@ class NoteRepositoryImpl implements NoteRepository {
           // Push dirty note to remote API endpoint (simulating offline-first sync)
           await _dio.post(
             '/posts',
-            data: {
-              'title': title,
-              'body': body,
-              'userId': 1,
-            },
+            data: {'title': title, 'body': body, 'userId': 1},
           );
 
           // Mark local note clean

@@ -29,7 +29,7 @@ class TestNoteRepository implements NoteRepository {
         updatedAt: DateTime.now(),
         dirty: true,
       ),
-      failure: null
+      failure: null,
     );
   }
 
@@ -73,12 +73,8 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          noteRepositoryProvider.overrideWithValue(fakeRepo),
-        ],
-        child: const MaterialApp(
-          home: NotesPage(),
-        ),
+        overrides: [noteRepositoryProvider.overrideWithValue(fakeRepo)],
+        child: const MaterialApp(home: NotesPage()),
       ),
     );
 
@@ -93,4 +89,3 @@ void main() {
     expect(find.byType(FloatingActionButton), findsOneWidget);
   });
 }
-

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../core/format.dart';
 import '../../domain/entities/note.dart';
 
@@ -61,16 +62,24 @@ class NoteTile extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: note.dirty
-                          ? (isDark ? Colors.amber.shade900 : Colors.amber.shade100)
-                          : (isDark ? Colors.teal.shade900 : Colors.teal.shade50),
+                          ? (isDark
+                                ? Colors.amber.shade900
+                                : Colors.amber.shade100)
+                          : (isDark
+                                ? Colors.teal.shade900
+                                : Colors.teal.shade50),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       formatDirtyStatus(note.dirty),
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: note.dirty
-                            ? (isDark ? Colors.amber.shade200 : Colors.amber.shade900)
-                            : (isDark ? Colors.teal.shade200 : Colors.teal.shade900),
+                            ? (isDark
+                                  ? Colors.amber.shade200
+                                  : Colors.amber.shade900)
+                            : (isDark
+                                  ? Colors.teal.shade200
+                                  : Colors.teal.shade900),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -88,7 +97,9 @@ class NoteTile extends StatelessWidget {
                 Text(
                   note.body,
                   style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                    color: theme.textTheme.bodyMedium?.color?.withValues(
+                      alpha: 0.8,
+                    ),
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -97,11 +108,7 @@ class NoteTile extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(
-                    Icons.access_time,
-                    size: 14,
-                    color: theme.hintColor,
-                  ),
+                  Icon(Icons.access_time, size: 14, color: theme.hintColor),
                   const SizedBox(width: 4),
                   Text(
                     formatDateTime(note.updatedAt),
