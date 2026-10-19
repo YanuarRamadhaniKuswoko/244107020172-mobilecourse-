@@ -1,0 +1,391 @@
+﻿<!doctype html>
+<html lang="id"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4F7DC9"><title>#07 | Clean Architecture</title>
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono"><link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons"><link rel="stylesheet" href="../assets/codelab-elements/codelab-elements.css">
+</head><body>
+<google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+<google-codelab codelab-gaid="G-H7507PFEJB" id="07-minggu-7-clean-architecture" title="#07 | Clean Architecture" environment="web" feedback-link="https://github.com/jti-polinema/flutter-codelab/issues">
+
+<google-codelab-step label="Selamat datang" duration="5">
+<p><strong>Terakhir diperbarui:</strong> 27 September 2026<br></p>
+<p><a href="index.html" lang="id">Bahasa Indonesia</a> | <a href="index-en.html" lang="en">English</a></p>
+<h2 is-upgraded>Tujuan pembelajaran</h2><p>Setelah menyelesaikan codelab ini, mahasiswa mampu:</p><ul>
+<li>menjelaskan prinsip SOLID dan separation of concerns dengan contoh kode Flutter;</li><li>membedakan struktur feature-first vs layer-first beserta trade-off-nya;</li><li>menjelaskan tiga layer (presentation, domain, data) dan aturan dependensi (dependensi mengarah ke dalam);</li><li>membedakan entity vs model serta peran repository, use case, dan dependency injection;</li><li>merefactor project Minggu 5/6 menjadi struktur feature-first yang terpisah layer-nya;</li><li>menguji use case dengan repository palsu tanpa database atau jaringan sungguhan.</li></ul>
+<h2 is-upgraded>Persiapan</h2><ul><li>Laptop/PC dan repository portfolio (GitHub/GitLab) berisi project Minggu 5 (<code>week5_offline_notes</code>) atau Minggu 6 (<code>campus_notify</code>). Codelab ini merefactor project tersebut, bukan membuat dari nol.</li><li>Flutter SDK, VS Code (ekstensi Flutter/Dart), emulator atau perangkat fisik.</li><li>Pemahaman Minggu 3 (Riverpod, AsyncValue, GoRouter), Minggu 4 (repository pattern, Dio), dan Minggu 5–6 (SQLite, secure storage).</li></ul>
+<aside class="warning"><p><strong>Kebijakan AI.</strong> Minggu 7 adalah materi lanjutan: AI boleh mengusulkan reorganisasi project, tetapi Anda wajib menilai trade-off-nya (mis. over-engineering untuk fitur kecil), memutuskan struktur final sendiri, dan menjelaskan setiap keputusan. Nilai ada pada justifikasi arsitektur, bukan pada kerapian folder hasil AI.</p></aside>
+</google-codelab-step>
+
+<google-codelab-step label="Konsep SOLID dan Clean Architecture" duration="15">
+<h2 is-upgraded>1. SOLID dalam satu contoh Flutter</h2><p>Lima prinsip, masing-masing satu kalimat plus gejala pelanggarannya:</p>
+<table><tr><th>Prinsip</th><th>Arti praktis</th><th>Gejala pelanggaran di Flutter</th></tr><tr><td><strong>S</strong>ingle Responsibility</td><td>Satu kelas punya satu alasan berubah</td><td>Widget 400 baris yang sekaligus fetch API, parsing JSON, dan formatting tanggal</td></tr><tr><td><strong>O</strong>pen/Closed</td><td>Tambah perilaku lewat ekstensi, bukan edit kode lama</td><td>Setiap sumber data baru memaksa edit widget yang sudah jalan</td></tr><tr><td><strong>L</strong>iskov Substitution</td><td>Pengganti harus bisa menggantikan aslinya tanpa merusak</td><td>Repository palsu untuk test malah melempar error yang tak pernah dilempar repository asli</td></tr><tr><td><strong>I</strong>nterface Segregation</td><td>Jangan paksa klien bergantung pada yang tak dipakai</td><td>Satu interface raksasa <code>AppRepository</code> untuk auth + notes + push sekaligus</td></tr><tr><td><strong>D</strong>ependency Inversion</td><td>Bergantung pada abstraksi, bukan concretion</td><td>Notifier memanggil <code>Dio</code> / <code>sqflite</code> langsung alih-alih repository</td></tr></table>
+<h2 is-upgraded>2. Tiga layer dan aturan dependensi</h2>
+<pre><code>presentation (widget, notifier, router)
+      |
+      v  bergantung ke
+domain (entity, repository interface, use case, failure)
+      ^
+      |  diimplementasikan oleh
+data (model, repository impl, Dio, SQLite, secure storage)</code></pre>
+<p>Aturan emas (<strong>dependency rule</strong>): dependensi hanya mengarah ke dalam. <code>domain</code> tidak tahu apa pun tentang Flutter, Dio, atau SQLite — sehingga logika bisnis bisa diunit-test murni.</p>
+<h2 is-upgraded>3. Feature-first vs layer-first</h2><table><tr><th>Struktur</th><th>Bentuk</th><th>Kapan dipakai</th></tr><tr><td><code>feature-first</code></td><td><code>lib/features/notes/{data,domain,presentation}</code></td><td>Project multi-fitur (pilihan codelab ini): satu fitur bisa dipahami/dihapus tanpa menyentuh fitur lain</td></tr><tr><td><code>layer-first</code></td><td><code>lib/{data,domain,presentation}</code> global</td><td>Project kecil satu fitur; cepat tapi berantakan saat fitur bertambah</td></tr></table>
+<h2 is-upgraded>4. Kosakata peran</h2><ul><li><strong>Entity:</strong> objek bisnis murni (tanpa <code>toMap/fromMap/toJson</code>). Hidup di <code>domain</code>.</li><li><strong>Model:</strong> representasi data luar (JSON/SQLite) + mapping ke entity. Hidup di <code>data</code>.</li><li><strong>Repository interface:</strong> kontrak yang dibutuhkan domain (mis. <code>fetchNotes()</code>). Hidup di <code>domain</code>.</li><li><strong>Repository impl:</strong> cara memenuhi kontrak memakai Dio/SQLite. Hidup di <code>data</code>.</li><li><strong>Use case:</strong> satu operasi bisnis (mis. <code>GetNotes</code>, <code>SyncNotes</code>). Hidup di <code>domain</code>, dipanggil presentation.</li><li><strong>DI:</strong> penyuntikan dependensi lewat provider Riverpod (atau <code>get_it</code>). Widget tidak pernah <code>new Repository()</code> sendiri.</li></ul>
+<aside class="special"><p><strong>Bukan sekadar pindah folder.</strong> Memindahkan file tanpa memutus dependensi terlarang (widget → Dio, notifier → SQLite) bukan Clean Architecture. Yang dinilai adalah arah panah dependensi, bukan kedalaman folder.</p></aside>
+</google-codelab-step>
+
+<google-codelab-step label="Praktikum 1: Audit layer project lama" duration="25">
+<h2 is-upgraded>1. Petakan file ke layer</h2>
+<p>Buka project Minggu 5 atau 6 Anda dan isi tabel ini di README (contoh untuk <code>campus_notify</code>):</p>
+<table><tr><th>File</th><th>Layer saat ini</th><th>Masalah</th></tr><tr><td><code>pages/home_page.dart</code></td><td>presentation</td><td>memanggil Dio langsung? memformat tanggal + parsing JSON di widget?</td></tr><tr><td><code>data/api_client.dart</code></td><td>data</td><td>OK bila hanya dipakai repository, bukan widget</td></tr><tr><td><code>providers/auth_provider.dart</code></td><td>presentation (state)</td><td>OK bila hanya memanggil repository/use case</td></tr><tr><td><code>data/auth_repository.dart</code></td><td>data (+kontrak tercampur)</td><td>interface dan implementasi masih satu kelas</td></tr></table>
+<h2 is-upgraded>2. Tandai tiga pelanggaran klasik</h2>
+<p>Cari dengan grep di project Anda:</p>
+<pre><code># Widget yang menyentuh jaringan / database langsung
+rg "Dio\(|http\.|openDatabase|SharedPreferences\.getInstance|FlutterSecureStorage" lib/pages lib/widgets
+
+# Logika bisnis di dalam build()
+rg "DateFormat|jsonDecode|\.toIso8601String" lib/pages lib/widgets
+
+# Instansiasi manual (DI bocor)
+rg "Repository\(|Dio\(BaseOptions" lib/pages lib/providers</code></pre>
+<p>Setiap temuan adalah satu item refactor. Target: ketiga pencarian di atas <strong>nol hasil</strong> di folder presentation setelah Praktikum 3.</p>
+<h2 is-upgraded>3. Gambar struktur target</h2>
+<p>Untuk satu fitur (<code>notes</code> atau <code>announcements</code>):</p>
+<pre><code>lib/
+├── core/
+│   ├── failures.dart        # Failure domain (murni Dart)
+│   └── providers.dart       # (opsional) provider lintas fitur
+├── features/
+│   └── notes/
+│       ├── domain/
+│       │   ├── entities/note.dart
+│       │   ├── repositories/note_repository.dart  # interface!
+│       │   └── usecases/get_notes.dart
+│       │   └── usecases/add_note.dart
+│       ├── data/
+│       │   ├── models/note_model.dart
+│       │   └── repositories/note_repository_impl.dart
+│       └── presentation/
+│           ├── providers/notes_providers.dart     # notifier + DI
+│           └── pages/notes_page.dart
+└── routes.dart              # GoRouter + konstanta rute</code></pre>
+<aside class="warning"><p><strong>Jangan buat fitur baru.</strong> Praktikum ini memindahkan dan memisahkan kode yang sudah ada dan sudah jalan. Commit sebelum refactor (<code>git commit -m "chore: snapshot before clean architecture"</code>) agar bisa dibandingkan dan di-rollback.</p></aside>
+</google-codelab-step>
+
+<google-codelab-step label="Praktikum 2: Domain dan data per fitur" duration="30">
+<h2 is-upgraded>1. Entity murni (domain)</h2>
+<p>Buat <code>lib/features/notes/domain/entities/note.dart</code>. Tanpa import Flutter, tanpa mapping:</p>
+<pre><code>class Note {
+  const Note({
+    this.id,
+    required this.title,
+    this.body = '',
+    required this.updatedAt,
+    this.dirty = false,
+  });
+
+  final int? id;
+  final String title;
+  final String body;
+  final DateTime updatedAt;
+  final bool dirty;
+}</code></pre>
+<h2 is-upgraded>2. Failure dan kontrak repository (domain)</h2>
+<p>Buat <code>lib/core/failures.dart</code> dan <code>lib/features/notes/domain/repositories/note_repository.dart</code>:</p>
+<pre><code>sealed class Failure {
+  const Failure(this.message);
+  final String message;
+}
+
+class LocalFailure extends Failure {
+  const LocalFailure(super.message);
+}
+
+class NetworkFailure extends Failure {
+  const NetworkFailure(super.message);
+}</code></pre>
+<pre><code>import '../../domain/entities/note.dart';
+import '../../../../core/failures.dart';
+
+abstract class NoteRepository {
+  Future&lt;({List&lt;Note&gt; notes, Failure? failure})&gt; fetchNotes();
+  Future&lt;({Note? note, Failure? failure})&gt; addNote({
+    required String title,
+    String body = '',
+  });
+}</code></pre>
+<p>Contoh memakai <em>record</em> Dart agar sukses/gagal eksplisit tanpa exception bocor ke presentation. Alternatif industri: package <code>fpdart</code>/<code>dartz</code> (<code>Either&lt;Failure, T&gt;</code>) — pola kontraknya sama.</p>
+<h2 is-upgraded>3. Model dan implementasi (data)</h2>
+<p>Buat <code>lib/features/notes/data/models/note_model.dart</code> (mapping hanya di sini) dan <code>note_repository_impl.dart</code>:</p>
+<pre><code>import '../../domain/entities/note.dart';
+
+class NoteModel extends Note {
+  const NoteModel({
+    super.id,
+    required super.title,
+    super.body = '',
+    required super.updatedAt,
+    super.dirty = false,
+  });
+
+  Map&lt;String, Object?&gt; toMap() =&gt; {
+        'id': id,
+        'title': title,
+        'body': body,
+        'updated_at': updatedAt.toIso8601String(),
+        'dirty': dirty ? 1 : 0,
+      };
+
+  factory NoteModel.fromMap(Map&lt;String, Object?&gt; map) {
+    return NoteModel(
+      id: (map['id'] as num?)?.toInt(),
+      title: map['title'] as String? ?? '',
+      body: map['body'] as String? ?? '',
+      updatedAt: DateTime.tryParse(map['updated_at'] as String? ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+      dirty: ((map['dirty'] as num?)?.toInt() ?? 0) == 1,
+    );
+  }
+
+  Note toEntity() =&gt; Note(
+        id: id,
+        title: title,
+        body: body,
+        updatedAt: updatedAt,
+        dirty: dirty,
+      );
+}</code></pre>
+<pre><code>import 'package:sqflite/sqflite.dart';
+import '../../../../core/failures.dart';
+import '../../domain/entities/note.dart';
+import '../../domain/repositories/note_repository.dart';
+import '../models/note_model.dart';
+
+class NoteRepositoryImpl implements NoteRepository {
+  NoteRepositoryImpl({required Future&lt;Database&gt; Function() openDb})
+      : _openDb = openDb;
+
+  final Future&lt;Database&gt; Function() _openDb;
+
+  @override
+  Future&lt;({List&lt;Note&gt; notes, Failure? failure})&gt; fetchNotes() async {
+    try {
+      final db = await _openDb();
+      final rows =
+          await db.query('notes', orderBy: 'updated_at DESC');
+      final notes =
+          rows.map((r) =&gt; NoteModel.fromMap(r).toEntity()).toList();
+      return (notes: notes, failure: null);
+    } catch (e) {
+      return (
+        notes: const &lt;Note&gt;[],
+        failure: LocalFailure('Gagal membaca catatan: $e'),
+      );
+    }
+  }
+
+  @override
+  Future&lt;({Note? note, Failure? failure})&gt; addNote({
+    required String title,
+    String body = '',
+  }) async {
+    try {
+      final db = await _openDb();
+      final now = DateTime.now();
+      final id = await db.insert(
+        'notes',
+        NoteModel(
+            title: title, body: body, updatedAt: now, dirty: true)
+            .toMap(),
+      );
+      return (
+        note: Note(id: id, title: title, body: body,
+            updatedAt: now, dirty: true),
+        failure: null,
+      );
+    } catch (e) {
+      return (note: null,
+          failure: LocalFailure('Gagal menyimpan catatan: $e'));
+    }
+  }
+}</code></pre>
+<h2 is-upgraded>4. Use case: satu operasi bisnis</h2>
+<p>Buat <code>lib/features/notes/domain/usecases/get_notes.dart</code>:</p>
+<pre><code>import '../../../../core/failures.dart';
+import '../entities/note.dart';
+import '../repositories/note_repository.dart';
+
+class GetNotes {
+  const GetNotes(this._repository);
+  final NoteRepository _repository;
+
+  Future&lt;({List&lt;Note&gt; notes, Failure? failure})&gt; call() {
+    return _repository.fetchNotes();
+  }
+}</code></pre>
+<aside class="special"><p><strong>Kapan use case perlu?</strong> Bila operasi menggabungkan &gt;1 repository atau punya aturan bisnis (validasi, sorting, sync). CRUD satu-baris boleh langsung repository → notifier; use case menjadi wajib saat logika tumbuh. Keputusan ini bagian dari AI Challenge.</p></aside>
+</google-codelab-step>
+
+<google-codelab-step label="Praktikum 3: Presentation, DI, dan verifikasi" duration="20">
+<h2 is-upgraded>1. Dependency injection dengan Riverpod</h2>
+<p>Buat <code>lib/features/notes/presentation/providers/notes_providers.dart</code>. Inilah satu-satunya tempat wiring:</p>
+<pre><code>import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../data/repositories/note_repository_impl.dart';
+import '../../domain/repositories/note_repository.dart';
+import '../../domain/usecases/get_notes.dart';
+import '../../domain/entities/note.dart';
+
+// Data layer: database opener disuntikkan (mudah diganti fake saat test)
+final noteRepositoryProvider = Provider&lt;NoteRepository&gt;((ref) {
+  return NoteRepositoryImpl(openDb: openNotesDb);
+});
+
+// Domain layer: use case menerima abstraksi, bukan implementasi
+final getNotesProvider = Provider&lt;GetNotes&gt;((ref) {
+  return GetNotes(ref.watch(noteRepositoryProvider));
+});
+
+// Presentation layer: state untuk UI
+final notesProvider = FutureProvider&lt;List&lt;Note&gt;&gt;((ref) async {
+  final result = await ref.watch(getNotesProvider).call();
+  if (result.failure != null) throw Exception(result.failure!.message);
+  return result.notes;
+});</code></pre>
+<h2 is-upgraded>2. Halaman hanya membaca state</h2>
+<p><code>notes_page.dart</code> versi bersih tidak mengandung SQL, Dio, JSON, atau formatting tanggal mentah:</p>
+<pre><code>class NotesPage extends ConsumerWidget {
+  const NotesPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(notesProvider);
+    return state.when(
+      loading: () =&gt;
+          const Center(child: CircularProgressIndicator()),
+      error: (e, _) =&gt; ErrorView(
+        message: '$e',
+        onRetry: () =&gt; ref.invalidate(notesProvider),
+      ),
+      data: (notes) =&gt; notes.isEmpty
+          ? const Center(child: Text('Belum ada catatan.'))
+          : NotesList(notes),
+    );
+  }
+}</code></pre>
+<h2 is-upgraded>3. Verifikasi dependency rule</h2>
+<p>Jalankan tiga pemeriksaan ini; semuanya harus lolos:</p>
+<pre><code># 1. Presentation steril dari data mentah (harus NOL hasil)
+rg "Dio\(|openDatabase|getDatabasesPath|FlutterSecureStorage|SharedPreferences\.getInstance|jsonDecode" lib/features/*/presentation lib/pages
+
+# 2. Domain steril dari framework &amp; package (harus NOL hasil)
+rg "import 'package:flutter|import 'package:dio|import 'package:sqflite|import 'package:firebase" lib/features/*/domain lib/core
+
+# 3. Static analysis + test
+flutter analyze
+flutter test</code></pre>
+<aside class="warning"><p><strong>Definisi selesai.</strong> Refactor dinyatakan selesai bila: aplikasi berjalan sama seperti sebelum refactor (uji manual 5 menit tiap fitur), tiga grep di atas nol hasil, <code>flutter analyze</code> bersih, dan test hijau. Screenshot before/after (UI sama, struktur beda) masuk folder <code>screenshots/</code>.</p></aside>
+</google-codelab-step>
+
+<google-codelab-step label="AI Challenge" duration="15">
+<h2 is-upgraded>Peran AI pada codelab ini</h2><p>AI boleh mengusulkan reorganisasi folder, tetapi <strong>Anda yang menilai trade-off-nya</strong>. Arsitektur yang salah (over-engineering untuk CRUD sederhana, atau under-engineering untuk fitur kompleks) lebih mahal daripada kode yang jelek.</p>
+<h2 is-upgraded>AI Prompt Challenge</h2>
+<p>Minta AI coding assistant dengan prompt berikut:</p>
+<pre><code>Project Flutter saya: campus_notify (auth + FCM + daftar pengumuman).
+Kondisi kini: folder lib/{data, providers, pages, messaging},
+repository tercampur dengan implementasi, widget memanggil Dio langsung.
+Tugas:
+1. Usulkan struktur feature-first Clean Architecture
+   (presentation/domain/data) untuk fitur auth + announcements.
+2. Untuk tiap file lama, sebutkan tujuan barunya (pindah/pecah/hapus).
+3. Tandai bagian yang over-engineering bila diterapkan ke CRUD sederhana,
+   dan kapan use case benar-benar dibutuhkan vs repository langsung.
+4. Tunjukkan wiring DI dengan Riverpod (tanpa package DI tambahan).
+Jelaskan trade-off setiap keputusan.</code></pre>
+<h2 is-upgraded>AI Verification Checklist</h2>
+<p>Sebelum usulan AI diterima, verifikasi dan catat temuan di README/docs:</p>
+<ul><li>Apakah interface repository tinggal di <code>domain</code> dan implementasi di <code>data</code>? (tolak bila AI menaruh keduanya di satu folder).</li><li>Apakah <code>domain</code> bebas import Flutter/Dio/SQLite/Firebase? Periksa dengan grep, bukan dengan membaca sekilas.</li><li>Apakah AI membuat use case untuk tiap CRUD satu-baris? (itu over-engineering: cukup repository langsung ke notifier, dengan alasan tertulis).</li><li>Apakah entity bebas mapping (<code>toMap/fromMap/toJson</code> hanya di model)?</li><li>Apakah wiring DI terpusat di provider dan widget tidak <code>new Repository()</code> sendiri?</li><li>Keputusan final dan alasan teknis Anda, boleh berbeda dari saran AI selama berargumen.</li></ul>
+<aside class="special"><p><strong>Tanggung jawab teknis:</strong> simpan prompt, output awal AI, tabel usulan-vs-keputusan-final, dan hasil tiga grep verifikasi pada folder <code>docs/</code>. Saat demo Anda harus mampu menggambar arah panah dependensi tanpa membuka catatan.</p></aside>
+</google-codelab-step>
+
+<google-codelab-step label="Refactoring, testing, dan error umum" duration="15">
+<h2 is-upgraded>Refactoring Challenge</h2>
+<ol type="1"><li>Terapkan pola yang sama ke fitur kedua (<code>auth</code> atau <code>announcements</code>): entity + repository interface + impl + 1 use case + provider wiring. Jangan biarkan satu fitur bersih dan sisanya kotor.</li><li>Ekstrak formatting tanggal dan parsing rute ke fungsi murni di <code>lib/core/format.dart</code> agar bisa diuji tanpa widget.</li><li>Pindahkan semua exception mentah menjadi <code>Failure</code> yang ramah pengguna sebelum mencapai UI; UI hanya menerima <code>message</code>.</li></ol>
+<h2 is-upgraded>Testing: use case dengan repository palsu</h2>
+<p>Buat <code>test/get_notes_test.dart</code>. Domain diuji murni — tanpa SQLite, tanpa Dio, tanpa Firebase:</p>
+<pre><code>import 'package:flutter_test/flutter_test.dart';
+
+class FakeNoteRepository implements NoteRepository {
+  FakeNoteRepository({this.items = const [], this.fail = false});
+
+  final List&lt;Note&gt; items;
+  final bool fail;
+
+  @override
+  Future&lt;({List&lt;Note&gt; notes, Failure? failure})&gt; fetchNotes() async {
+    if (fail) {
+      return (
+        notes: const &lt;Note&gt;[],
+        failure: const LocalFailure('db locked (simulasi)'),
+      );
+    }
+    return (notes: items, failure: null);
+  }
+
+  @override
+  Future&lt;({Note? note, Failure? failure})&gt; addNote({
+    required String title,
+    String body = '',
+  }) {
+    throw UnimplementedError();
+  }
+}
+
+void main() {
+  test('GetNotes meneruskan daftar dari repository', () async {
+    final repo = FakeNoteRepository(items: [
+      Note(title: 'A', updatedAt: DateTime(2026, 9, 27)),
+    ]);
+    final result = await GetNotes(repo).call();
+    expect(result.failure, isNull);
+    expect(result.notes.length, 1);
+    expect(result.notes.first.title, 'A');
+  });
+
+  test('GetNotes meneruskan failure tanpa melempar', () async {
+    final repo = FakeNoteRepository(fail: true);
+    final result = await GetNotes(repo).call();
+    expect(result.failure, isA&lt;LocalFailure&gt;());
+    expect(result.notes, isEmpty);
+  });
+}</code></pre>
+<p>Jalankan:</p>
+<pre><code>flutter analyze
+flutter test</code></pre>
+<h2 is-upgraded>Error umum dan solusinya</h2>
+<table><tr><th>Gejala</th><th>Penyebab umum</th><th>Solusi</th></tr><tr><td>Import cycle / file saling mengimpor</td><td>Presentation diimpor oleh domain/data, atau feature mengimpor antar-presentation</td><td>Periksa arah panah: hanya presentation → domain ← data; fitur berkomunikasi via rute, bukan import widget</td></tr><tr><td><code>The argument type 'NoteModel' can't be assigned to 'Note'</code></td><td>Repository impl mengembalikan model, kontrak meminta entity</td><td>Selalu konversi <code>.toEntity()</code> di batas data → domain</td></tr><tr><td>Provider <code>ref.watch</code> di luar widget/provider</td><td>Wiring DI ditulis di fungsi biasa atau constructor</td><td>Wiring hanya di dalam <code>Provider/Notifier</code> atau widget via <code>ConsumerWidget</code></td></tr><tr><td>Test butuh database sungguhan</td><td>Use case diuji dengan <code>NoteRepositoryImpl</code> asli</td><td>Uji domain selalu dengan fake yang mengimplementasikan interface</td></tr><tr><td>Refactor merusak fitur yang sudah jalan</td><td>Tidak ada snapshot commit + tidak ada uji manual per fitur</td><td>Commit snapshot dulu; setelah refactor uji tiap fitur ±5 menit dan bandingkan screenshot</td></tr></table>
+<h2 is-upgraded>Checklist verifikasi mandiri</h2>
+<ul><li>Tiga grep sterilitas (presentation &amp; domain) nol hasil.</li><li>Interface di domain, implementasi di data, mapping hanya di model.</li><li>Widget tidak menginstansiasi repository; semua lewat provider.</li><li>Aplikasi berjalan identik sebelum/sesudah refactor (bukti screenshot).</li><li><code>flutter analyze</code> bersih dan semua test lulus.</li></ul>
+</google-codelab-step>
+
+<google-codelab-step label="Tugas, refleksi, dan referensi" duration="10">
+<h2 is-upgraded>Mini project / Industry Challenge</h2>
+<p>Refactor project Minggu 5 atau 6 Anda menjadi <strong>Clean Architecture feature-first</strong> (lanjutkan repository yang sama, bukan project baru):</p>
+<ol type="1"><li>Minimal 1 fitur penuh (<code>notes</code> atau <code>announcements</code>) terpisah menjadi <code>domain/</code> (entity, repository interface, use case, failure) + <code>data/</code> (model, repository impl) + <code>presentation/</code> (provider wiring, pages).</li><li>Dependency rule terbukti: sertakan hasil tiga grep sterilitas di README.</li><li>Behavior identik: screenshot before/after tiap fitur di folder <code>screenshots/</code>.</li><li>Sertakan minimal 2 test yang lulus (use case sukses + failure dengan repository palsu).</li><li>Kerjakan AI Challenge dan dokumentasikan prompt, tabel usulan-vs-keputusan-final, dan alasan teknis di <code>docs/</code>.</li><li>Push ke repository portfolio pada folder <code>07-week-7-clean-architecture/</code> (atau lanjutkan folder minggu asal + catat refactor di README) dengan struktur <code>lib/</code>, <code>test/</code>, <code>docs/</code>, <code>README.md</code>, dan <code>screenshots/</code>. README menjelaskan tujuan, diagram layer + arah dependensi, fitur utama, stack teknologi, cara menjalankan, dan hasil yang dicapai.</li></ol>
+<h2 is-upgraded>Refleksi</h2>
+<ul><li>Mengapa interface repository harus tinggal di domain, bukan di data? Apa yang rusak bila dibalik?</li><li>Kapan use case benar-benar dibutuhkan, dan kapan repository langsung ke notifier sudah cukup?</li><li>Apa biaya over-engineering (use case per CRUD satu-baris) bagi tim kecil? Kapan biayanya sepadan?</li><li>Bagian mana dari usulan AI yang Anda tolak atau sederhanakan, dan mengapa?</li></ul>
+<h2 is-upgraded>Referensi pendukung</h2>
+<ul>
+<li><a href="../00-slides/Week_07_Clean_Architecture.html" target="_blank">Slide Week 7: Clean Architecture</a></li>
+<li><a href="https://docs.flutter.dev/app-architecture/guide" target="_blank">Flutter: App architecture guide</a></li>
+<li><a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html" target="_blank">The Clean Architecture (Robert C. Martin)</a></li>
+<li><a href="https://riverpod.dev/docs/concepts/providers" target="_blank">Riverpod: Providers &amp; dependency injection</a></li>
+<li><a href="https://dart.dev/language/records" target="_blank">Dart: Records (return ganda sukses/gagal)</a></li>
+<li><a href="https://pub.dev/packages/fpdart" target="_blank">fpdart package (alternatif Either)</a></li>
+<li><a href="https://go_router.dev/" target="_blank">GoRouter: redirect &amp; deep linking</a></li>
+<li><a href="https://learnxinyminutes.com/dart/" target="_blank">Learn Dart in Y Minutes</a></li>
+</ul>
+</google-codelab-step>
+
+</google-codelab>
+<script src="../assets/codelab-elements/native-shim.js"></script><script src="../assets/codelab-elements/custom-elements.min.js"></script><script src="../assets/codelab-elements/prettify.js"></script><script src="../assets/codelab-elements/codelab-elements.js"></script><script src="//support.google.com/inapp/api.js"></script>
+</body></html>
+

@@ -11,8 +11,10 @@
 | Informasi | Keterangan |
 |---|---|
 | **Nama** | Yanuar Ramadhani Kuswoko |
-| **NIM** | 244107020176 |
+| **NIM** | 244107020172 |
 | **Kelas / Absen** | TI-2D / 25 |
+| **Semester** | 5 |
+| **Mata Kuliah** | Pemrograman Mobile |
 | **Program Studi** | D-IV Teknik Informatika |
 | **Jurusan** | Teknologi Informasi |
 | **Institusi** | Politeknik Negeri Malang |
@@ -151,7 +153,7 @@ void main() {
   // Profil dengan email terisi
   final profil1 = Profil(
     nama: 'Yanuar Ramadhani Kuswoko',
-    nim: '244107020176',
+    nim: '244107020172',
     email: 'yanuar@example.com',
   );
   print('Profil 1:');
@@ -221,7 +223,7 @@ Luas Persegi Panjang: 100.0
 === 3. LATIHAN MANDIRI: CLASS PROFIL & NULL SAFETY ===
 Profil 1:
   Nama : Yanuar Ramadhani Kuswoko
-  NIM  : 244107020176
+  NIM  : 244107020172
   Email: YANUAR@EXAMPLE.COM
 
 Profil 2 (Email null):

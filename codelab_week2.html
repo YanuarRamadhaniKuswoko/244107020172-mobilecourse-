@@ -1,0 +1,351 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4F7DC9">
+  <title>#02 | Declarative UI &amp; Responsive Design</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/claat-public/codelab-elements.css">
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid="G-H7507PFEJB" id="02-minggu-2-declarative-ui-responsive-design" title="#02 | Declarative UI &amp; Responsive Design" environment="web" feedback-link="https://github.com/jti-polinema/flutter-codelab/issues">
+    <google-codelab-step label="Selamat datang" duration="5">
+      <p><strong>Terakhir diperbarui:</strong> 27 Agustus 2026</p>
+      <p><a href="index.html">Bahasa Indonesia</a> | <a href="index-en.html" lang="en">English</a></p>
+      <h2 is-upgraded>Tujuan Pembelajaran</h2>
+      <p>Setelah menyelesaikan codelab ini, mahasiswa mampu:</p>
+      <ul>
+        <li>Menjelaskan prinsip declarative UI dan hubungan antara widget, konfigurasi, serta state.</li>
+        <li>Menggunakan <code>StatelessWidget</code>, <code>StatefulWidget</code>, <code>Container</code>, <code>Row</code>, <code>Column</code>, dan <code>Expanded</code>.</li>
+        <li>Membedakan komponen Material 3 dan Cupertino untuk kebutuhan platform yang berbeda.</li>
+        <li>Membangun layout responsif untuk ukuran layar mobile dan tablet.</li>
+        <li>Menerapkan theme, dark mode, styling, dan aksesibilitas dasar.</li>
+      </ul>
+      <aside class="warning"><p><strong>Kebijakan AI.</strong> Fokus utama minggu ini adalah memahami widget dan layout. Kerjakan latihan inti secara mandiri sebelum menggunakan AI untuk mengeksplorasi alternatif desain.</p></aside>
+    </google-codelab-step>
+
+    <google-codelab-step label="Konsep dan teori" duration="25">
+      <h2 is-upgraded>Declarative UI</h2>
+      <p>Pada pendekatan deklaratif, kode mendeskripsikan tampilan berdasarkan state saat ini. Ketika state berubah, Flutter membangun ulang bagian UI yang relevan. Developer berfokus pada hubungan data dan tampilan, bukan mengubah setiap elemen UI secara manual.</p>
+      <pre><code>Widget build(BuildContext context) {
+  return Text('Halo, $nama');
+}</code></pre>
+      <h2 is-upgraded>Widget dasar</h2>
+      <ul>
+        <li><code>StatelessWidget</code> cocok untuk UI yang output-nya ditentukan oleh konfigurasi dari parent.</li>
+        <li><code>StatefulWidget</code> memiliki objek <code>State</code> untuk data yang dapat berubah selama lifecycle.</li>
+        <li><code>Container</code> menggabungkan ukuran, padding, margin, decoration, dan child.</li>
+        <li><code>Row</code> menyusun child secara horizontal, sedangkan <code>Column</code> secara vertikal.</li>
+        <li><code>Expanded</code> membagi ruang yang tersedia di dalam <code>Row</code> atau <code>Column</code>.</li>
+      </ul>
+      <h2 is-upgraded>Material 3 dan Cupertino</h2>
+      <p><code>MaterialApp</code> dan widget Material 3 cocok untuk pola desain Android dan lintas platform. <code>CupertinoApp</code> serta widget Cupertino menyediakan tampilan yang mengikuti pola iOS. Pilih komponen berdasarkan kebutuhan pengalaman pengguna, bukan sekadar nama platform.</p>
+      <h2 is-upgraded>Responsive layout</h2>
+      <p>Layout responsif menyesuaikan struktur UI dengan ruang yang tersedia. Gunakan <code>LayoutBuilder</code> atau <code>MediaQuery</code> untuk membaca ukuran, lalu ubah jumlah kolom atau arah layout. Hindari ukuran piksel tetap untuk elemen yang harus beradaptasi.</p>
+      <h2 is-upgraded>Theme, dark mode, dan accessibility</h2>
+      <p>Theme menyimpan warna, tipografi, dan bentuk komponen secara terpusat. Sediakan <code>theme</code> dan <code>darkTheme</code> pada <code>MaterialApp</code>. Untuk aksesibilitas, gunakan kontras yang cukup, label yang bermakna, ukuran teks yang terbaca, dan jangan menyampaikan informasi hanya melalui warna.</p>
+    </google-codelab-step>
+
+    <google-codelab-step label="Demo" duration="5">
+      <h2 is-upgraded>Hasil akhir yang akan dibangun</h2>
+      <p>Sebelum mulai, amati target codelab ini: dashboard mahasiswa yang menampilkan <strong>satu kolom</strong> pada layar sempit dan <strong>dua kolom</strong> pada layar lebar, dengan tema terang dan gelap yang konsisten.</p>
+      <ol>
+        <li>Jalankan aplikasi hasil akhir pada emulator ukuran ponsel (misal 5"), lalu tablet (misal 10"); bandingkan jumlah kolomnya.</li>
+        <li>Aktifkan dark mode pada emulator/perangkat dan amati perubahan tema secara otomatis.</li>
+        <li>Perhatikan pola declarative: UI tidak diubah satu per satu, hanya state yang diperbarui dan Flutter membangun ulang tampilan.</li>
+      </ol>
+      <aside class="note"><p>Anda belum perlu menyalin kodenya sekarang — bangun sendiri melalui praktikum di bawah. Demo ini hanya gambaran tujuan akhir.</p></aside>
+    </google-codelab-step>
+
+    <google-codelab-step label="Praktikum: layout sederhana (warm-up)" duration="20">
+      <p>Sebelum dashboard responsif, latih dulu widget dasar dengan membuat kartu profil sederhana. Buat project baru atau ganti sementara isi <code>lib/main.dart</code>:</p>
+      <pre><code>import 'package:flutter/material.dart';
+
+void main() =&gt; runApp(const ProfileApp());
+
+class ProfileApp extends StatelessWidget {
+  const ProfileApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Scaffold(
+        body: Center(child: ProfileCard()),
+      ),
+    );
+  }
+}
+
+class ProfileCard extends StatelessWidget {
+  const ProfileCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.indigo.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            children: [
+              const CircleAvatar(child: Icon(Icons.person)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('Nama Mahasiswa',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('...ketik nama Anda di sini...'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Row(children: [
+            Expanded(child: Text('NIM')),
+            Text('...ketik NIM Anda di sini...'),
+          ]),
+          const Row(children: [
+            Expanded(child: Text('Kelas')),
+            Text('...ketik kelas Anda di sini...'),
+          ]),
+        ],
+      ),
+    );
+  }
+}</code></pre>
+      <h2 is-upgraded>Eksperimen warm-up</h2>
+      <ol>
+        <li>Hapus <code>Expanded</code> pada baris nama, lalu amati peringatan overflow atau perilaku layout-nya; kembalikan setelah itu.</li>
+        <li>Ganti <code>mainAxisSize: MainAxisSize.min</code> menjadi nilai default dan amati perubahan tinggi kartu.</li>
+        <li>Tambahkan satu baris data (misal <code>Email</code>) menggunakan pola <code>Row</code> + <code>Expanded</code> yang sama.</li>
+      </ol>
+    </google-codelab-step>
+
+    <google-codelab-step label="Praktikum: dashboard responsif" duration="40">
+      <h2 is-upgraded>Menyiapkan project</h2>
+      <pre><code>flutter create responsive_dashboard
+cd responsive_dashboard
+flutter run</code></pre>
+      <p>Buka <code>lib/main.dart</code>. Buat aplikasi profil sederhana berikut, lalu jalankan pada emulator atau perangkat fisik.</p>
+      <pre><code>import 'package:flutter/material.dart';
+
+void main() =&gt; runApp(const DashboardApp());
+
+class DashboardApp extends StatelessWidget {
+  const DashboardApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
+      darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark, colorSchemeSeed: Colors.indigo),
+      themeMode: ThemeMode.system,
+      home: const DashboardPage(),
+    );
+  }
+}
+
+class DashboardPage extends StatelessWidget {
+  const DashboardPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Student Dashboard')),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final columns = constraints.maxWidth &gt;= 700 ? 2 : 1;
+          return GridView.count(
+            padding: const EdgeInsets.all(16),
+            crossAxisCount: columns,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 2.6,
+            children: const [
+              DashboardCard(title: 'Assignments', value: '8'),
+              DashboardCard(title: 'Attendance', value: '92%'),
+              DashboardCard(title: 'Portfolio', value: 'Ready'),
+              DashboardCard(title: 'Current week', value: '02'),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DashboardCard extends StatelessWidget {
+  const DashboardCard({required this.title, required this.value, super.key});
+  final String title;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(children: [
+          Expanded(child: Text(title)),
+          Text(value, style: Theme.of(context).textTheme.headlineSmall),
+        ]),
+      ),
+    );
+  }
+}</code></pre>
+      <h2 is-upgraded>Menambahkan interaksi: StatefulWidget dan Cupertino</h2>
+      <p>Sejauh ini dashboard masih <code>StatelessWidget</code>. Ubah <code>DashboardApp</code> menjadi <code>StatefulWidget</code> dan tambahkan <code>CupertinoSwitch</code> (widget Cupertino) pada <code>AppBar</code> untuk mengganti tema secara manual — sekaligus membedakan komponen Material dan Cupertino secara langsung:</p>
+      <pre><code>class DashboardApp extends StatefulWidget {
+  const DashboardApp({super.key});
+
+  @override
+  State&lt;DashboardApp&gt; createState() =&gt; _DashboardAppState();
+}
+
+class _DashboardAppState extends State&lt;DashboardApp&gt; {
+  bool isDark = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
+      darkTheme: ThemeData(useMaterial3: true, brightness: Brightness.dark, colorSchemeSeed: Colors.indigo),
+      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+      home: DashboardPage(
+        isDark: isDark,
+        onDarkChanged: (value) =&gt; setState(() =&gt; isDark = value),
+      ),
+    );
+  }
+}</code></pre>
+      <p>Sesuaikan <code>DashboardPage</code> agar menerima state dan callback:</p>
+      <pre><code>class DashboardPage extends StatelessWidget {
+  const DashboardPage({
+    required this.isDark,
+    required this.onDarkChanged,
+    super.key,
+  });
+  final bool isDark;
+  final ValueChanged&lt;bool&gt; onDarkChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Student Dashboard'),
+        actions: [
+          Row(
+            children: [
+              Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+              const SizedBox(width: 4),
+              CupertinoSwitch(
+                value: isDark,
+                onChanged: onDarkChanged,
+              ),
+              const SizedBox(width: 12),
+            ],
+          ),
+        ],
+      ),
+      body: LayoutBuilder(
+        // ... kode GridView sebelumnya, tidak berubah
+      ),
+    );
+  }
+}</code></pre>
+      <aside class="note"><p><code>CupertinoSwitch</code> berasal dari pustaka Cupertino — tambahkan <code>import 'package:flutter/cupertino.dart';</code> di bagian atas file. Bandingkan dengan <code>Switch.adaptive</code> milik Material yang otomatis menampilkan tampilan Cupertino di iOS.</p></aside>
+      <h2 is-upgraded>Eksperimen layout</h2>
+      <ol>
+        <li>Ubah breakpoint dari <code>700</code> menjadi nilai lain dan amati perubahan jumlah kolom.</li>
+        <li>Ubah <code>themeMode</code> menjadi <code>ThemeMode.dark</code>, lalu kembalikan ke <code>ThemeMode.system</code>.</li>
+        <li>Uji aplikasi dengan ukuran layar emulator yang berbeda.</li>
+        <li>Tambahkan <code>Semantics</code> atau label yang bermakna pada elemen yang penting bagi screen reader.</li>
+      </ol>
+    </google-codelab-step>
+
+    <google-codelab-step label="Tugas dan AI design exploration" duration="40">
+      <h2 is-upgraded>Tugas utama</h2>
+      <p>Kembangkan dashboard menjadi halaman <strong>Academic Overview</strong> dengan ketentuan:</p>
+      <ul>
+        <li>Memiliki header profil dan minimal empat kartu informasi.</li>
+        <li>Menggunakan <code>Row</code>, <code>Column</code>, <code>Expanded</code>, dan <code>Container</code>.</li>
+        <li>Menampilkan satu kolom pada layar sempit dan dua kolom pada layar lebar.</li>
+        <li>Menyediakan light theme dan dark theme yang tetap terbaca, dengan toggle tema (misal <code>CupertinoSwitch</code> atau <code>Switch.adaptive</code>).</li>
+        <li>Memiliki label aksesibilitas untuk informasi atau tombol penting.</li>
+        <li>Menyertakan screenshot layar sempit dan lebar pada folder <code>screenshots/</code>.</li>
+      </ul>
+      <h2 is-upgraded>AI Prompt Challenge</h2>
+      <p>Setelah implementasi mandiri selesai, gunakan AI hanya untuk membandingkan dua alternatif tata letak. Kerjakan challenge berikut:</p>
+      <ol>
+        <li><strong>Prompt desain.</strong> Ajukan prompt ini (atau variasinya): "Bandingkan dua tata letak dashboard akademik untuk Flutter: versi <code>GridView</code> dan versi <code>LayoutBuilder</code> + <code>Column</code>. Jelaskan trade-off responsif dan aksesibilitasnya."</li>
+        <li><strong>Prompt penguatan konsep.</strong> "Jelaskan kapan penggunaan <code>Expanded</code> justru menyebabkan overflow di dalam <code>Row</code>, beri contoh kode yang gagal dan perbaikannya."</li>
+        <li><strong>Verification prompt.</strong> Minta AI mengaudit hasilnya sendiri: "Periksa kembali rekomendasi layout di atas: apakah tetap responsif di bawah 600px, apakah mengurangi aksesibilitas, dan apakah ada widget yang tidak tersedia di Flutter stabil saat ini?"</li>
+        <li><strong>Dokumentasikan.</strong> Simpan prompt, output penting, keputusan yang dipilih, alasan teknis, dan bukti verifikasi (test/screenshots) di README tugas minggu ini.</li>
+      </ol>
+      <p>Kriteria lolos: saran AI yang Anda pakai benar-benar berjalan, responsif, tidak menurunkan aksesibilitas, dan Anda mampu menjelaskan setiap keputusannya saat code review, bukan sekadar menyalin output AI.</p>
+      <h2 is-upgraded>Refactoring challenge</h2>
+      <p>Setelah tugas utama berjalan, rapikan kode Anda:</p>
+      <ol>
+        <li>Ekstrak kartu informasi menjadi widget reusable (misal <code>InfoCard</code>) yang menerima <code>title</code> dan <code>value</code>, sehingga tidak ada duplikasi widget.</li>
+        <li>Ganti warna dan ukuran yang di-hardcode dengan <code>Theme.of(context)</code> agar mengikuti tema terang/gelap secara otomatis.</li>
+        <li>Pindahkan breakpoint ke satu konstanta bernama (misal <code>const kWideBreakpoint = 700;</code>) agar hanya didefinisikan satu kali.</li>
+        <li>Jalankan <code>flutter analyze</code> dan pastikan tidak ada error maupun warning baru.</li>
+      </ol>
+      <h2 is-upgraded>Testing dasar</h2>
+      <p>Tambahkan widget test di folder <code>test/</code> untuk memverifikasi perilaku responsif. Override ukuran layar menggunakan <code>tester.view</code>:</p>
+      <pre><code>import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:responsive_dashboard/main.dart';
+
+void main() {
+  testWidgets('Dashboard satu kolom di layar sempit', (tester) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const DashboardApp());
+
+    final width = tester.getSize(find.byType(Card)).width;
+    expect(width, lessThan(700));
+  });
+
+  testWidgets('Dashboard dua kolom di layar lebar', (tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(const DashboardApp());
+
+    final width = tester.getSize(find.byType(Card)).width;
+    expect(width, greaterThan(500));
+  });
+}</code></pre>
+      <p>Jalankan dengan <code>flutter test</code>. Kedua test harus lulus sebelum tugas dikumpulkan. Simpan hasil test pada folder <code>test/</code> di folder tugas minggu ini.</p>
+      <h2 is-upgraded>Checklist verifikasi</h2>
+      <ul><li><code>flutter analyze</code> tidak menghasilkan error.</li><li><code>flutter test</code> lulus semua widget test responsif.</li><li>Aplikasi dapat dijalankan pada ukuran layar sempit dan lebar.</li><li>Dark mode memiliki kontras dan teks yang terbaca.</li><li>Struktur widget dapat dijelaskan saat code review.</li><li>Screenshot, folder <code>test/</code>, dan README sudah tersimpan pada folder tugas Week 2.</li></ul>
+    </google-codelab-step>
+
+    <google-codelab-step label="Refleksi dan referensi" duration="10">
+      <h2 is-upgraded>Refleksi</h2>
+      <ul><li>Apa perbedaan cara berpikir imperative dan declarative saat membangun UI?</li><li>Kapan <code>Expanded</code> membantu dan kapan penggunaannya justru menghasilkan layout error?</li><li>Bagaimana breakpoint dan theme memengaruhi pengalaman pengguna?</li><li>Apa yang Anda verifikasi dari rekomendasi AI setelah tugas inti selesai?</li></ul>
+      <h2 is-upgraded>Referensi</h2>
+      <ul><li><a href="https://docs.flutter.dev/ui" target="_blank">Flutter UI documentation</a></li><li><a href="https://docs.flutter.dev/ui/layout/responsive" target="_blank">Building responsive apps</a></li><li><a href="https://m3.material.io/" target="_blank">Material Design 3</a></li><li><a href="https://docs.flutter.dev/ui/accessibility-and-internationalization/accessibility" target="_blank">Flutter accessibility</a></li></ul>
+    </google-codelab-step>
+  </google-codelab>
+  <script src="https://storage.googleapis.com/claat-public/native-shim.js"></script><script src="https://storage.googleapis.com/claat-public/custom-elements.min.js"></script><script src="https://storage.googleapis.com/claat-public/prettify.js"></script><script src="https://storage.googleapis.com/claat-public/codelab-elements.js"></script><script src="//support.google.com/inapp/api.js"></script>
+</body>
+</html>
+

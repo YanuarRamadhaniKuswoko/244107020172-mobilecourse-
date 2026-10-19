@@ -11,7 +11,7 @@
 | Informasi | Keterangan |
 |---|---|
 | **Nama** | Yanuar Ramadhani Kuswoko |
-| **NIM** | 244107020176 |
+| **NIM** | 244107020172 |
 | **Kelas / Absen** | TI-2D / 25 |
 | **Semester** | 5 |
 | **Mata Kuliah** | Pemrograman Mobile |

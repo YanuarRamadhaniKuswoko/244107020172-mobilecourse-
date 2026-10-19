@@ -11,8 +11,10 @@
 | Informasi | Keterangan |
 |---|---|
 | **Nama** | Yanuar Ramadhani Kuswoko |
-| **NIM** | 244107020176 |
+| **NIM** | 244107020172 |
 | **Kelas / Absen** | TI-2D / 25 |
+| **Semester** | 5 |
+| **Mata Kuliah** | Pemrograman Mobile |
 | **Program Studi** | D-IV Teknik Informatika |
 | **Jurusan** | Teknologi Informasi |
 | **Institusi** | Politeknik Negeri Malang |
@@ -172,7 +174,7 @@ Container(
       const SizedBox(height: 12),
       const Row(children: [
         Expanded(child: Text('NIM')),
-        Text('244107020176'),
+        Text('244107020172'),
       ]),
       const SizedBox(height: 8),
       const Row(children: [
