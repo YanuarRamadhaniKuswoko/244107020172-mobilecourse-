@@ -9,4 +9,3 @@ class SyncNotes {
     return _repository.syncNotes();
   }
 }
-

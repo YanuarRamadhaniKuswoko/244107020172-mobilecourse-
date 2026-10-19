@@ -23,9 +23,7 @@ void main() {
     });
 
     test('fromMap handles missing or null fields gracefully', () {
-      final map = <String, Object?>{
-        'title': 'Catatan Minimal',
-      };
+      final map = <String, Object?>{'title': 'Catatan Minimal'};
 
       final model = NoteModel.fromMap(map);
 
@@ -87,4 +85,3 @@ void main() {
     });
   });
 }
-

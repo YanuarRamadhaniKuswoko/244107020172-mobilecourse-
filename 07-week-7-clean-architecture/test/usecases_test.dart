@@ -14,7 +14,10 @@ class MockNoteRepository implements NoteRepository {
   @override
   Future<({List<Note> notes, Failure? failure})> fetchNotes() async {
     if (shouldFail) {
-      return (notes: <Note>[], failure: const LocalFailure('Simulated failure'));
+      return (
+        notes: <Note>[],
+        failure: const LocalFailure('Simulated failure'),
+      );
     }
     return (notes: List<Note>.unmodifiable(notes), failure: null);
   }
@@ -125,11 +128,7 @@ void main() {
   group('UpdateNote UseCase', () {
     test('validates empty title on update', () async {
       final useCase = UpdateNote(repo);
-      final note = Note(
-        id: 1,
-        title: '',
-        updatedAt: DateTime.now(),
-      );
+      final note = Note(id: 1, title: '', updatedAt: DateTime.now());
       final result = await useCase(note);
       expect(result.failure, isA<ValidationFailure>());
     });

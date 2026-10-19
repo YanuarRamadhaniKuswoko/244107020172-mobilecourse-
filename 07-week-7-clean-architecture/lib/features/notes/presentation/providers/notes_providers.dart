@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../data/datasources/notes_database.dart';
 import '../../data/repositories/note_repository_impl.dart';
 import '../../domain/entities/note.dart';
@@ -36,8 +37,9 @@ final syncNotesUseCaseProvider = Provider<SyncNotes>((ref) {
 });
 
 /// 3. Presentation Layer: State management reaktif menggunakan AsyncNotifier
-final notesProvider =
-    AsyncNotifierProvider<NotesNotifier, List<Note>>(NotesNotifier.new);
+final notesProvider = AsyncNotifierProvider<NotesNotifier, List<Note>>(
+  NotesNotifier.new,
+);
 
 class NotesNotifier extends AsyncNotifier<List<Note>> {
   @override
@@ -128,4 +130,3 @@ final noteDetailProvider = FutureProvider.family<Note?, int>((ref, id) async {
   if (res.failure != null) throw Exception(res.failure!.message);
   return res.note;
 });
-

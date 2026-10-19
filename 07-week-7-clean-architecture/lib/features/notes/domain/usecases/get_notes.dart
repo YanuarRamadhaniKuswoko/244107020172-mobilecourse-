@@ -10,4 +10,3 @@ class GetNotes {
     return _repository.fetchNotes();
   }
 }
-

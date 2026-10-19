@@ -55,4 +55,3 @@ class Note {
   String toString() =>
       'Note(id: $id, title: $title, dirty: $dirty, updatedAt: $updatedAt)';
 }
-

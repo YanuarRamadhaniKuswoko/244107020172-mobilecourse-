@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../domain/entities/note.dart';
 import '../providers/notes_providers.dart';
 import '../widgets/note_tile.dart';
@@ -173,7 +174,9 @@ class _NotesPageState extends ConsumerState<NotesPage> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                   child: Card(
-                    color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    color: theme.colorScheme.primaryContainer.withValues(
+                      alpha: 0.5,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -243,21 +246,18 @@ class _NotesPageState extends ConsumerState<NotesPage> {
                 )
               else
                 SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final note = notes[index];
-                      return NoteTile(
-                        note: note,
-                        onTap: () {
-                          if (note.id != null) {
-                            context.push('/note/${note.id}');
-                          }
-                        },
-                        onDelete: () => _deleteNoteWithConfirmation(note),
-                      );
-                    },
-                    childCount: notes.length,
-                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final note = notes[index];
+                    return NoteTile(
+                      note: note,
+                      onTap: () {
+                        if (note.id != null) {
+                          context.push('/note/${note.id}');
+                        }
+                      },
+                      onDelete: () => _deleteNoteWithConfirmation(note),
+                    );
+                  }, childCount: notes.length),
                 ),
             ],
           );

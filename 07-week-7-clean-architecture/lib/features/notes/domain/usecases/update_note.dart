@@ -16,4 +16,3 @@ class UpdateNote {
     return _repository.updateNote(note);
   }
 }
-

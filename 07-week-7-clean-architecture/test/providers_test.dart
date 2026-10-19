@@ -81,9 +81,7 @@ void main() {
     ]);
 
     final container = ProviderContainer(
-      overrides: [
-        noteRepositoryProvider.overrideWithValue(repo),
-      ],
+      overrides: [noteRepositoryProvider.overrideWithValue(repo)],
     );
     addTearDown(container.dispose);
 
@@ -101,4 +99,3 @@ void main() {
     expect(updatedNotes.any((n) => n.title == 'Item 2'), isTrue);
   });
 }
-
