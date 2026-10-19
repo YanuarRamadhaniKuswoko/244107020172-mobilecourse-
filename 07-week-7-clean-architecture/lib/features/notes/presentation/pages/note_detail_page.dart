@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/format.dart';
 import '../../domain/entities/note.dart';
@@ -71,7 +72,7 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        Navigator.of(context).pop();
+        context.pop();
       }
     } catch (e) {
       if (mounted) {
@@ -223,6 +224,9 @@ class _NoteDetailPageState extends ConsumerState<NoteDetailPage> {
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
                     return 'Judul tidak boleh kosong';
+                  }
+                  if (val.trim().length > 100) {
+                    return 'Judul maksimal 100 karakter';
                   }
                   return null;
                 },
